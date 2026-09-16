@@ -1,2 +1,5 @@
 kind: "CMS"
 form: []
+mixins:
+  - name: "blurhash"
+    allowContentTypes: "media:image"

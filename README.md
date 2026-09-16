@@ -20,16 +20,26 @@ contribute without colliding.
 
 ## Build & run
 
-```
-cd ../lib-blurhash && ./gradlew publishToMavenLocal   # lib-blurhash -> ~/.m2
-cd ../app-blurhash && ./gradlew build
-cp build/libs/app-blurhash.jar ~/.enonic/sandboxes/blurhash/home/deploy/
-```
-
 Sandbox `blurhash` (XP 8.1.0-RC2, Essentials template — includes Content Studio):
 
 ```
 enonic sandbox start blurhash --detach
 ```
+
+```
+cd ../lib-blurhash && ./gradlew publishToMavenLocal   # lib-blurhash -> ~/.m2
+cd ../app-blurhash && XP_HOME=$HOME/.enonic/sandboxes/blurhash/home ./gradlew deploy
+```
+
+`deploy` depends on `jar`, so the app is rebuilt — and the library re-merged — automatically.
+Skip the first line when only app code changed. If a library change appears not to land,
+Gradle resolved a cached SNAPSHOT; add `--refresh-dependencies`.
+
+`./gradlew dev` runs a continuous rebuild-and-redeploy. It watches this app only, not the
+library.
+
+> **Server code must be `.ts`.** A hand-written `.js` under `src/main/resources` never
+> reaches the jar — `pnpmPack` deletes `build/resources/main/**/*.js` before `vp pack`
+> regenerates from `.ts`. The build still succeeds; the file is silently absent.
 
 Admin: http://localhost:8080/admin
