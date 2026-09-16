@@ -1,6 +1,6 @@
 import type { ComponentProps, PartData } from '@enonic/react-components';
-import { useEffect, useRef, useState } from 'react';
 import type { GalleryItem } from './GalleryItem';
+import { RevealImage } from '../shared/RevealImage';
 
 /** CSS multi-column masonry: items flow top-to-bottom, column by column. */
 const masonry: React.CSSProperties = {
@@ -8,56 +8,18 @@ const masonry: React.CSSProperties = {
   columnGap: 40,
 };
 
-/**
- * Hidden until fully *decoded*, so neither the network's progressive paint nor the decoder's
- * top-to-bottom paint of a cached image ever shows over the placeholder; the finished image
- * appears in one step. `load` (and `complete`) fire before decoding is done, hence `decode()`.
- * The effect covers images already complete before hydration, when React's onLoad never fires.
- */
-function GalleryImage({ item }: { item: GalleryItem }) {
-  const ref = useRef<HTMLImageElement>(null);
-  const [loaded, setLoaded] = useState(false);
+type GalleryProps = ComponentProps<PartData> & {
+  /** Blurhash variant: hide each image until decoded, then fade it in over the placeholder. */
+  reveal?: boolean;
+};
 
-  const reveal = () => {
-    const img = ref.current;
-    if (!img) return;
-    const show = () => setLoaded(true);
-    if (typeof img.decode === 'function') img.decode().then(show, show);
-    else show();
-  };
-
-  useEffect(() => {
-    const img = ref.current;
-    if (img && img.complete && img.naturalWidth > 0) reveal();
-  }, []);
-
-  return (
-    <img
-      ref={ref}
-      src={item.url}
-      alt={item.alt}
-      width={item.width}
-      height={item.height}
-      loading="lazy"
-      decoding="async"
-      onLoad={reveal}
-      style={{
-        display: 'block',
-        width: '100%',
-        height: 'auto',
-        opacity: loaded ? 1 : 0,
-        // Fade starts only after decode(): the placeholder dissolves into the finished image.
-        transition: 'opacity 0.5s ease-out',
-      }}
-    />
-  );
-}
+const plainImage: React.CSSProperties = { display: 'block', width: '100%', height: 'auto' };
 
 /**
  * Four-column masonry of lazy-loaded images. When an item has a placeholder it sits behind the
  * <img> as a background, visible until the finished image is shown on top.
  */
-export function Gallery({ data }: ComponentProps<PartData>) {
+export function Gallery({ data, reveal = true }: GalleryProps) {
   const items = (data?.items as GalleryItem[] | undefined) ?? [];
   if (items.length === 0) return <p>No images directly under the chosen folder.</p>;
 
@@ -76,10 +38,19 @@ export function Gallery({ data }: ComponentProps<PartData>) {
               border: item.color ? `8px solid ${item.color}` : undefined,
             }}
           >
-            <GalleryImage item={item} />
+            {reveal ? (
+              <RevealImage src={item.url} alt={item.alt} width={item.width} height={item.height} />
+            ) : (
+              <img src={item.url} alt={item.alt} width={item.width} height={item.height} loading="lazy" style={plainImage} />
+            )}
           </div>
         </figure>
       ))}
     </section>
   );
+}
+
+/** The simple variant: a plain lazy <img>, no placeholder, no reveal. */
+export function SimpleGallery(props: ComponentProps<PartData>) {
+  return <Gallery {...props} reveal={false} />;
 }

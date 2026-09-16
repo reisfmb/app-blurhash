@@ -1,7 +1,8 @@
 /**
- * Single page controller: every site request lands here (see site.yaml). The DataFetcher walks
- * the content's component tree and runs each registered processor; the `App` entry renders the
- * result, server-side, and hydrates it in the browser.
+ * The `default` page controller. XP calls it once a content has this page set; until then XP's
+ * own page handler answers, which is what Content Studio expects for "no page yet" (its
+ * controller picker). The DataFetcher walks the page's component tree and runs each registered
+ * processor; the `App` entry renders the result server-side and hydrates it in the browser.
  */
 import type { Request, Response } from '@enonic-types/core';
 import { render } from '/lib/enonic/react4xp';
@@ -15,11 +16,11 @@ export function get(request: Request): Response {
   }
 
   const data = dataFetcher.process({ content, request });
-  if (data.component.type === 'page' && !data.component.descriptor) {
-    return { status: 418 }; // no page template chosen yet: let Content Studio show its picker
-  }
-
   const id = `react4xp_${content._id}`;
+  // Content Studio 6 unlocks a page only when <body> itself is the page component
+  // (editor.js: `isComponentElement(document.body)`), so the marker goes on the body tag and
+  // App.tsx renders the page without an inner wrapper carrying the same attribute.
+  const bodyAttrs = request.mode === 'edit' ? ' data-portal-component-type="page"' : '';
   const body = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,7 +28,7 @@ export function get(request: Request): Response {
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>${content.displayName}</title>
 </head>
-<body>
+<body${bodyAttrs}>
   <div id="${id}"></div>
 </body>
 </html>`;

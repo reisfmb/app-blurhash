@@ -365,7 +365,26 @@ function section(title: string, run_: () => string): string {
     `<span>${ok ? 'PASS' : 'FAIL'}</span></h2>${rendered}</section>`;
 }
 
+/** `?dump=/site/some-folder`: the stored page state of one content, as CS sees it. */
+function dump(req: Request): { contentType: string; body: string } | null {
+  const key = req.params.dump;
+  const repo = req.params.repo || DEFAULT_REPO;
+  if (req.params.tree === '1') {
+    const rows = inAdmin(repo, () => query({ count: 200, query: '', sort: '_path ASC' }).hits as unknown as Record<string, unknown>[])
+      .map((c) => ({ _path: c._path, type: c.type, displayName: c.displayName, valid: c.valid, page: c.page }));
+    return { contentType: 'application/json', body: JSON.stringify(rows, null, 1) };
+  }
+  if (!key) return null;
+  const content = inAdmin(repo, () => getContent({ key }) as Record<string, unknown> | null);
+  const picked = content
+    ? { _path: content._path, type: content.type, displayName: content.displayName, valid: content.valid, data: content.data, page: content.page }
+    : { error: `no content ${key} in ${repo}` };
+  return { contentType: 'application/json', body: JSON.stringify(picked, null, 2) };
+}
+
 function handleGet(req: Request): { contentType: string; body: string } {
+  const dumped = dump(req);
+  if (dumped) return dumped;
 
   const sections = [
     section('M2 — encode and decode', () => m2(req)),

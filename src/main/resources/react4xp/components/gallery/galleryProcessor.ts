@@ -6,21 +6,10 @@
 import type { PartDescriptor } from '@enonic-types/core';
 import type { ComponentProcessor } from '@enonic-types/lib-react4xp/DataFetcher';
 import { getChildren } from '/lib/xp/content';
-import { getContent, getSite, imageUrl } from '/lib/xp/portal';
-import { averageColor, decode } from '/lib/blurhash';
-import type { GalleryItem } from './GalleryItem';
-
-type Image = {
-  _id: string;
-  displayName: string;
-  type: string;
-  x?: Record<string, Record<string, unknown>>;
-};
+import { getContent, getSite } from '/lib/xp/portal';
+import { toImageItem, type ImageContent as Image } from '../shared/imageItem';
 
 type GalleryConfig = { folder?: string };
-
-/** `x` namespace the lib writes to: the consuming app's name with dots replaced by dashes. */
-const NAMESPACE = app.name.replace(/\./g, '-');
 
 /**
  * Where to look: the configured folder; else the content being rendered when it can hold
@@ -50,29 +39,11 @@ function shuffle<T>(list: T[]): T[] {
   return list;
 }
 
-function toItem(image: Image, withHash: boolean): GalleryItem {
-  const info = (image.x?.media?.imageInfo ?? {}) as { imageWidth?: number; imageHeight?: number };
-  const width = info.imageWidth || 4;
-  const height = info.imageHeight || 3;
-  const stored = image.x?.[NAMESPACE]?.blurhash as { hash?: string } | undefined;
-  const hash = withHash ? stored?.hash : undefined;
-
-  return {
-    url: imageUrl({ id: image._id, scale: 'full' }),
-    alt: image.displayName,
-    width,
-    height,
-    // Both null when there is no hash yet, or the stored one is invalid: the <img> still renders.
-    placeholder: hash ? decode(hash, { width, height }) : null,
-    color: hash ? averageColor(hash) : null,
-  };
-}
-
 function processor(withHash: boolean): ComponentProcessor<PartDescriptor> {
   return ({ component }) => {
     // `Component` is a union that includes fragments (no config): narrow by shape.
     const config = ((component as { config?: GalleryConfig } | undefined)?.config ?? {}) as GalleryConfig;
-    return { items: shuffle(imagesUnder(config.folder)).map((image) => toItem(image, withHash)) };
+    return { items: shuffle(imagesUnder(config.folder)).map((image) => toImageItem(image, withHash)) };
   };
 }
 
