@@ -19,6 +19,8 @@ dependencies {
     include xplibs.io
     include xplibs.context
     include xplibs.event
+    include xplibs.task
+    include xplibs.project
     include libs.thymeleaf
 
     // Embeds the lib jar in this bundle: its /lib/blurhash JS and its Java classes both

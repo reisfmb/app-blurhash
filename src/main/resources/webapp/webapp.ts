@@ -5,10 +5,10 @@
  * http://localhost:8080/webapp/bre.app.blurhash/    (?id=<contentId>, ?repo=<repo>)
  */
 
-import { query, get as getContent, getAttachmentStream } from '/lib/xp/content';
+import { query, get as getContent, getAttachmentStream, modify } from '/lib/xp/content';
 import { run } from '/lib/xp/context';
 import { decode, decodeRgb, encodeThumbnail, process, readThumbnail } from '/lib/blurhash';
-import { modify } from '/lib/xp/content';
+import { get as getTask } from '/lib/xp/task';
 
 const DEFAULT_REPO = 'com.enonic.cms.blurhash-demo';
 
@@ -209,6 +209,50 @@ function m4(req: Request): string {
   });
 }
 
+/**
+ * M5: the backfill runs from install(), so the only honest test is to give it work and
+ * restart the app.
+ *
+ * `?wipe=1` strips the mixin from every image in the repo. Redeploy, reload, and the count
+ * should be back to full without anyone asking.
+ */
+function m5(req: Request): string {
+  const repo = req.params.repo || DEFAULT_REPO;
+
+  return inAdmin(repo, () => {
+    const images = query({ count: 500, contentTypes: ['media:image'], sort: '_path ASC', query: '' });
+
+    if (req.params.wipe === '1') {
+      images.hits.forEach((hit) => {
+        modify<StoredMedia>({
+          key: hit._id,
+          requireValid: false,
+          editor: (c) => {
+            if (c.x?.['bre-app-blurhash']) delete c.x['bre-app-blurhash'].blurhash;
+            return c;
+          },
+        });
+      });
+
+      return `HTML:<p>Wiped the hash from ${images.total} image(s). ` +
+        `Redeploy the app, then <a href="?">reload</a> — install() should refill them.</p>` +
+        `\n\nwiped at ${new Date().toISOString()}`;
+    }
+
+    let hashed = 0;
+    images.hits.forEach((hit) => {
+      const stored = (hit as unknown as StoredMedia).x?.['bre-app-blurhash']?.blurhash;
+      if (stored && stored.hash) hashed++;
+    });
+
+    const task = req.params.task ? JSON.stringify(getTask(req.params.task)) : null;
+
+    return `HTML:<p><a href="?wipe=1">Wipe every hash</a>, redeploy, then reload.</p>` +
+      `\n\n${hashed} of ${images.total} image(s) hashed` +
+      (task ? `\n\ntask: ${task}` : '');
+  });
+}
+
 function section(title: string, run_: () => string): string {
   let ok = true;
   let body: string;
@@ -233,10 +277,12 @@ function section(title: string, run_: () => string): string {
 }
 
 function handleGet(req: Request): { contentType: string; body: string } {
+
   const sections = [
     section('M2 — encode and decode', () => m2(req)),
     section('M3 — store in the mixin, render from storage', () => m3(req)),
     section('M4 — event listener refills it', () => m4(req)),
+    section('M5 — backfill on install', () => m5(req)),
   ].join('\n');
 
   return {
