@@ -7,7 +7,7 @@
 
 import { query, get as getContent, getAttachmentStream } from '/lib/xp/content';
 import { run } from '/lib/xp/context';
-import { decodeRgb, encodeThumbnail, readThumbnail } from '/lib/blurhash';
+import { decode, decodeRgb, encodeThumbnail, process, readThumbnail } from '/lib/blurhash';
 
 const DEFAULT_REPO = 'com.enonic.cms.blurhash-demo';
 
@@ -15,6 +15,10 @@ const DEFAULT_REPO = 'com.enonic.cms.blurhash-demo';
 const MAX_EDGE = 32;
 
 type Request = { params: Record<string, string | undefined> };
+
+type StoredMedia = {
+  x?: Record<string, Record<string, { hash?: string; source?: string }>>;
+};
 
 type Media = {
   _id: string;
@@ -121,6 +125,47 @@ function m2(req: Request): string {
   });
 }
 
+/**
+ * M3: store the hash, then render from what was stored.
+ *
+ * Deliberately calls `process` twice. The second call must report `unchanged` — that is the
+ * fingerprint guard working, visible without opening Content Studio, and it is what makes
+ * M4's listener safe to switch on.
+ */
+function m3(req: Request): string {
+  const repo = req.params.repo || DEFAULT_REPO;
+  const image = subject(repo, req.params.id);
+
+  return inAdmin(repo, () => {
+    const first = process(image._id);
+    const second = process(image._id);
+
+    const stored = (getContent({ key: image._id }) as StoredMedia | null)
+      ?.x?.['bre-app-blurhash']?.blurhash;
+
+    if (!stored || !stored.hash) {
+      return `FAILED: nothing stored on ${image._path}\n` +
+        `first:  ${JSON.stringify(first)}\nsecond: ${JSON.stringify(second)}`;
+    }
+
+    // An aspect ratio, not a size: the same image comes back for 4x3 and 1200x900.
+    const placeholder = decode(stored.hash, { width: 4, height: 3 });
+    const asDisplaySize = decode(stored.hash, { width: 1200, height: 900 });
+    if (!placeholder) return `FAILED: decode returned null for stored hash ${stored.hash}`;
+
+    return (
+      `HTML:<figure style="display:inline-block">` +
+      `<img src="${placeholder}" height="220"><figcaption>from the stored hash</figcaption></figure>` +
+      `\n\nfirst call:  ${JSON.stringify(first)}\n` +
+      `second call: ${JSON.stringify(second)}   <- must be "unchanged"\n\n` +
+      `stored hash:   ${stored.hash}\n` +
+      `stored source: ${stored.source}\n` +
+      `placeholder:   ${placeholder.length} chars of data URI\n` +
+      `4:3 and 1200:900 agree: ${placeholder === asDisplaySize}`
+    );
+  });
+}
+
 function section(title: string, run_: () => string): string {
   let ok = true;
   let body: string;
@@ -145,7 +190,10 @@ function section(title: string, run_: () => string): string {
 }
 
 function handleGet(req: Request): { contentType: string; body: string } {
-  const sections = [section('M2 — encode and decode', () => m2(req))].join('\n');
+  const sections = [
+    section('M2 — encode and decode', () => m2(req)),
+    section('M3 — store in the mixin, render from storage', () => m3(req)),
+  ].join('\n');
 
   return {
     contentType: 'text/html; charset=utf-8',
