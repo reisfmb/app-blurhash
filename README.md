@@ -20,15 +20,11 @@ contribute without colliding.
 
 ## Build & run
 
-Sandbox `blurhash` (XP 8.1.0-RC2, Essentials template — includes Content Studio):
-
-```
-enonic sandbox start blurhash --detach
-```
+Needs a running XP 8.1 with Content Studio.
 
 ```
 cd ../lib-blurhash && ./gradlew publishToMavenLocal   # lib-blurhash -> ~/.m2
-cd ../app-blurhash && XP_HOME=$HOME/.enonic/sandboxes/blurhash/home ./gradlew deploy
+cd ../app-blurhash && XP_HOME=/path/to/xp/home ./gradlew deploy
 ```
 
 `deploy` depends on `jar`, so the app is rebuilt — and the library re-merged — automatically.
