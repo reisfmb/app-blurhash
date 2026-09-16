@@ -20,6 +20,9 @@ importers:
       '@enonic-types/lib-content':
         specifier: ^8.0.4
         version: 8.0.4
+      '@enonic-types/lib-context':
+        specifier: ^8.0.4
+        version: 8.0.4
       '@enonic-types/lib-io':
         specifier: ^8.0.4
         version: 8.0.4
@@ -61,6 +64,9 @@ packages:
 
   '@enonic-types/lib-content@8.0.4':
     resolution: {integrity: sha512-Grpdvvp1dozubFJ7Idognd9BjpJJu/J/WvdyhZ5UL9eTf/nCaNJUnq/6XkPlvTqspjgKHgKqgRQU0GzxJRKgcA==}
+
+  '@enonic-types/lib-context@8.0.4':
+    resolution: {integrity: sha512-5E6x4Ow4O9lE1UCYXgwcHytC6GsRbtzdXp7rxSufQxrsJLKvF4+XyQqA2Hws4cGl8RbZhm2gboSB/NfC5TugCw==}
 
   '@enonic-types/lib-io@8.0.4':
     resolution: {integrity: sha512-nrcExEXKGu1DiLfAhrm7/X2w+O4nXa08VJsA/CP2GPkdWUDHdpjDUPmfIYwzRxiRzT2DNUPf0/0B/eENbr7kgA==}
@@ -1129,6 +1135,10 @@ snapshots:
       '@enonic-types/core': 8.0.4
 
   '@enonic-types/lib-content@8.0.4':
+    dependencies:
+      '@enonic-types/core': 8.0.4
+
+  '@enonic-types/lib-context@8.0.4':
     dependencies:
       '@enonic-types/core': 8.0.4
 

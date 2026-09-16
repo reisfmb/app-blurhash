@@ -11,6 +11,7 @@
     "@enonic-types/core": "^8.0.4",
     "@enonic-types/global": "^8.0.4",
     "@enonic-types/lib-content": "^8.0.4",
+    "@enonic-types/lib-context": "^8.0.4",
     "@enonic-types/lib-io": "^8.0.4",
     "@enonic-types/lib-portal": "^8.0.4",
     "typescript": "^7.0.2",
