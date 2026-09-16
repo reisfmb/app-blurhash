@@ -1,0 +1,81 @@
+import com.github.gradle.node.pnpm.task.PnpmInstallTask
+import com.github.gradle.node.pnpm.task.PnpmTask
+
+plugins {
+    id 'com.enonic.xp.app'
+    alias(libs.plugins.node.gradle)
+}
+
+app {
+    name = "${group}.${projectName}"
+
+    // GraalJS supports modern ES, so `vp pack` can target es2023 (see vite.config.ts).
+    scriptEngine = 'GraalJS'
+}
+
+dependencies {
+    include xplibs.portal
+    include xplibs.content
+    include xplibs.io
+    include libs.thymeleaf
+
+    // Embeds the lib jar in this bundle: its /lib/blurhash JS and its Java classes both
+    // resolve under this app's key.
+    include libs.blurhash
+}
+
+repositories {
+    mavenLocal() // lib-blurhash is consumed from ~/.m2 via publishToMavenLocal
+    mavenCentral()
+    xp.enonicRepo('dev')
+}
+
+// Download + pin Node + pnpm so the build is self-contained (clean checkout / CI).
+node {
+    download = true
+    version = '24.18.0'
+    pnpmVersion = '10.33.4' // match packageManager in package.json
+}
+
+// pnpmInstall is auto-registered; freeze the lockfile in CI.
+tasks.named('pnpmInstall', PnpmInstallTask) {
+    if (System.getenv('CI') != null) {
+        args.add('--frozen-lockfile')
+    }
+}
+
+// Keep raw sources (and dev-only config) out of the jar — pnpmPack emits the compiled
+// versions into build/resources/main instead.
+tasks.named('processResources') {
+    exclude '**/*.ts' // server TS emitted as .js by pnpmPack
+    exclude '**/tsconfig.json' // type-check config, not an app resource
+    exclude '**/.gitkeep'
+    exclude '**/node_modules/**'
+    includeEmptyDirs = false
+}
+
+// Compile server-side .ts -> per-file CommonJS in build/resources/main (see vite.config pack).
+// There is no client bundle: the blur placeholder is decoded server-side.
+tasks.register('pnpmPack', PnpmTask) {
+    dependsOn tasks.named('pnpmInstall')
+    mustRunAfter tasks.named('processResources')
+    description = 'Build server-side resources (ts -> CommonJS js) with vp pack.'
+    group = 'build'
+    args = ['run', 'pack:server']
+    inputs.dir 'src/main'
+    inputs.file 'vite.config.ts'
+    inputs.file 'package.json'
+    outputs.dir layout.buildDirectory.dir('resources/main')
+    outputs.cacheIf { false } // output dir overlaps processResources — caching unreliable
+
+    // Required: vp pack runs clean:false, so without this a deleted .ts keeps shipping its .js.
+    doFirst {
+        delete fileTree(layout.buildDirectory.dir('resources/main')) {
+            include '**/*.js'
+        }
+    }
+}
+
+tasks.named('jar') {
+    dependsOn tasks.named('pnpmPack')
+}

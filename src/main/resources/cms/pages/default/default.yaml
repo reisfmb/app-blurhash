@@ -1,0 +1,6 @@
+kind: "Page"
+title: "Default Page"
+description: "Default page controller"
+form: []
+regions:
+  - "main"

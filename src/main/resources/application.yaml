@@ -1,0 +1,5 @@
+kind: "Application"
+title: "BlurHash Demo"
+description: "Demo site app for lib-blurhash"
+vendorName: "Enonic AS"
+vendorUrl: "https://enonic.com"

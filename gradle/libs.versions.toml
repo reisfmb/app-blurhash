@@ -1,0 +1,11 @@
+[versions]
+node-gradle = "7.1.0"
+thymeleaf = "3.0.0"
+blurhash = "1.0.0-SNAPSHOT"
+
+[libraries]
+thymeleaf = { module = "com.enonic.lib:lib-thymeleaf", version.ref = "thymeleaf" }
+blurhash = { module = "bre.lib:lib-blurhash", version.ref = "blurhash" }
+
+[plugins]
+node-gradle = { id = "com.github.node-gradle.node", version.ref = "node-gradle" }
