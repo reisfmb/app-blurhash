@@ -46,6 +46,8 @@ function GalleryImage({ item }: { item: GalleryItem }) {
         width: '100%',
         height: 'auto',
         opacity: loaded ? 1 : 0,
+        // Fade starts only after decode(): the placeholder dissolves into the finished image.
+        transition: 'opacity 0.5s ease-out',
       }}
     />
   );
@@ -57,7 +59,7 @@ function GalleryImage({ item }: { item: GalleryItem }) {
  */
 export function Gallery({ data }: ComponentProps<PartData>) {
   const items = (data?.items as GalleryItem[] | undefined) ?? [];
-  if (items.length === 0) return <p>No images directly under the site.</p>;
+  if (items.length === 0) return <p>No images directly under the chosen folder.</p>;
 
   return (
     <section style={masonry}>
@@ -65,10 +67,13 @@ export function Gallery({ data }: ComponentProps<PartData>) {
         <figure key={item.url} style={{ margin: '0 0 40px', breakInside: 'avoid' }}>
           <div
             style={{
-              aspectRatio: `${item.width} / ${item.height}`,
+              // No aspect-ratio here: the <img>'s width/height attributes reserve the space, and a
+              // ratio on a bordered box would leave a strip of background under the image.
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundImage: item.placeholder ? `url(${item.placeholder})` : undefined,
+              // Average colour from the hash: the image's own tint frames it, before and after load.
+              border: item.color ? `8px solid ${item.color}` : undefined,
             }}
           >
             <GalleryImage item={item} />

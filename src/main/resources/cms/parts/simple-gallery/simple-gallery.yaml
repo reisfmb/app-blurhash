@@ -1,4 +1,14 @@
 kind: "Part"
 title: "Simple Gallery"
-description: "All images directly under the site, lazy-loaded with no placeholder"
-form: []
+description: "All images directly under the chosen folder (default: the current folder, else the site), lazy-loaded with no placeholder"
+form:
+  - type: "ContentSelector"
+    name: "folder"
+    label: "Folder"
+    helpText: "Images directly under this folder are shown. Empty = the folder this page is on, else the site."
+    occurrences:
+      min: 0
+      max: 1
+    allowContentType:
+      - "base:folder"
+      - "portal:site"

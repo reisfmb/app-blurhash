@@ -6,4 +6,6 @@ export type GalleryItem = {
   height: number;
   /** PNG data URI from the stored BlurHash, or null: no hash, invalid hash, or the simple gallery. */
   placeholder: string | null;
+  /** `#rrggbb` average colour from the hash, or null on the same conditions as `placeholder`. */
+  color: string | null;
 };
