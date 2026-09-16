@@ -4,8 +4,8 @@ import { render } from '/lib/thymeleaf';
 const view = resolve('default.html');
 
 function handleGet(): { contentType: string; body: string } {
-  const content = getContent<{ page?: { regions?: Record<string, unknown> } }>();
-  const regions = content && content.page ? content.page.regions : undefined;
+  const content = getContent();
+  const regions = content && content.page ? (content.page as { regions?: Record<string, unknown> }).regions : undefined;
 
   return {
     contentType: 'text/html; charset=utf-8',

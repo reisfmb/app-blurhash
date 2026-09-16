@@ -7,7 +7,11 @@
 
 import { query, get as getContent, getAttachmentStream, modify } from '/lib/xp/content';
 import { run } from '/lib/xp/context';
-import { decode, decodeRgb, encodeThumbnail, process, readThumbnail } from '/lib/blurhash';
+import { decode, decodeRgb, encodeThumbnail, process } from '/lib/blurhash';
+// Not public API (frozen at M6): reached by path because this harness is the library's own.
+import { readThumbnail } from '/lib/blurhash/pixels';
+import { config } from '/lib/blurhash/settings';
+import { KEYS } from '/lib/blurhash/config';
 import { get as getTask } from '/lib/xp/task';
 
 const DEFAULT_REPO = 'com.enonic.cms.blurhash-demo';
@@ -152,16 +156,20 @@ function m3(req: Request): string {
     // An aspect ratio, not a size: the same image comes back for 4x3 and 1200x900.
     const placeholder = decode(stored.hash, { width: 4, height: 3 });
     const asDisplaySize = decode(stored.hash, { width: 1200, height: 900 });
-    if (!placeholder) return `FAILED: decode returned null for stored hash ${stored.hash}`;
+
+    // Null is a legitimate outcome once M6 lets an editor break the field: render nothing.
+    const figure = placeholder
+      ? `<figure style="display:inline-block"><img src="${placeholder}" height="220">` +
+        `<figcaption>from the stored hash</figcaption></figure>`
+      : `<p><em>Stored hash is invalid — rendering without a placeholder (see M6).</em></p>`;
 
     return (
-      `HTML:<figure style="display:inline-block">` +
-      `<img src="${placeholder}" height="220"><figcaption>from the stored hash</figcaption></figure>` +
+      `HTML:${figure}` +
       `\n\nfirst call:  ${JSON.stringify(first)}\n` +
       `second call: ${JSON.stringify(second)}   <- must be "unchanged"\n\n` +
       `stored hash:   ${stored.hash}\n` +
       `stored source: ${stored.source}\n` +
-      `placeholder:   ${placeholder.length} chars of data URI\n` +
+      `placeholder:   ${placeholder ? `${placeholder.length} chars of data URI` : 'null'}\n` +
       `4:3 and 1200:900 agree: ${placeholder === asDisplaySize}`
     );
   });
@@ -253,6 +261,87 @@ function m5(req: Request): string {
   });
 }
 
+/**
+ * M6: config is read, and a broken hash degrades to "no placeholder" rather than to an error.
+ *
+ * The `hash` field is editable in Content Studio, so it is untrusted input. `?corrupt=1`
+ * overwrites the stored hash with junk; the page must then render the M3 section with a null
+ * placeholder and `process` must still say `unchanged` — the fingerprint matches, so the
+ * library will not repair it unaided. `?repair=1` clears the mixin and lets the listener
+ * refill it, which is also the documented remedy.
+ */
+function m6(req: Request): string {
+  const repo = req.params.repo || DEFAULT_REPO;
+
+  const effective = JSON.stringify(config());
+  // By key, not Object.keys: app.config is a Java map behind a host object and does not
+  // enumerate. Index access is the only thing that works on it.
+  const raw = JSON.stringify(
+    Object.keys(KEYS).reduce((acc, name) => {
+      const key = KEYS[name as keyof typeof KEYS];
+      const value = app.config[key];
+      return value === undefined ? acc : { ...acc, [key]: value };
+    }, {} as Record<string, string>),
+  );
+
+  const junk = [
+    ['not a hash', 'not a hash'],
+    ['illegal chars, right length', 'L' + '/'.repeat(27)],
+    ['claims 9x9, 28 chars', '|' + 'L'.repeat(27)],
+    ['empty', ''],
+  ] as const;
+  const rejected = junk.map(([label, value]) => `${label}: ${decode(value) === null ? 'null' : 'NOT NULL'}`);
+  if (rejected.some((line) => line.indexOf('NOT NULL') !== -1)) {
+    return `FAILED: decode accepted junk\n${rejected.join('\n')}`;
+  }
+
+  const image = subject(repo, req.params.id);
+  return inAdmin(repo, () => {
+    const namespace = app.name.replace(/\./g, '-');
+
+    if (req.params.corrupt === '1') {
+      modify<StoredMedia>({
+        key: image._id,
+        requireValid: false,
+        editor: (c) => {
+          const x = (c.x || {}) as Record<string, Record<string, unknown>>;
+          x[namespace] = x[namespace] || {};
+          x[namespace].blurhash = { ...(x[namespace].blurhash as object), hash: 'L' + '/'.repeat(27) };
+          c.x = x as typeof c.x;
+          return c;
+        },
+      });
+      return `HTML:<p>Corrupted the stored hash on <code>${image._path}</code>. ` +
+        `<a href="?">Reload</a>: M3 must render nothing rather than fail, and report <code>unchanged</code>. ` +
+        `<a href="?repair=1">Repair</a> when done.</p>\n\ncorrupted at ${new Date().toISOString()}`;
+    }
+
+    if (req.params.repair === '1') {
+      modify<StoredMedia>({
+        key: image._id,
+        requireValid: false,
+        editor: (c) => {
+          if (c.x?.[namespace]) delete c.x[namespace].blurhash;
+          return c;
+        },
+      });
+      return `HTML:<p>Cleared the mixin on <code>${image._path}</code>; the listener refills it. ` +
+        `<a href="?">Reload</a>.</p>\n\nrepaired at ${new Date().toISOString()}`;
+    }
+
+    const stored = (getContent({ key: image._id }) as StoredMedia | null)?.x?.[namespace]?.blurhash;
+    const placeholder = stored?.hash ? decode(stored.hash) : null;
+
+    return `HTML:<p><a href="?corrupt=1">Corrupt the stored hash</a> on the subject image, reload, ` +
+      `then <a href="?repair=1">repair</a>.</p>` +
+      `\n\neffective config: ${effective}\n` +
+      `from app.config:  ${raw}\n\n` +
+      `decode rejects junk:\n  ${rejected.join('\n  ')}\n\n` +
+      `stored hash: ${stored?.hash ?? '(none)'}\n` +
+      `decodes to:  ${placeholder ? `${placeholder.length} chars of data URI` : 'null — renders without a placeholder'}`;
+  });
+}
+
 function section(title: string, run_: () => string): string {
   let ok = true;
   let body: string;
@@ -283,6 +372,7 @@ function handleGet(req: Request): { contentType: string; body: string } {
     section('M3 — store in the mixin, render from storage', () => m3(req)),
     section('M4 — event listener refills it', () => m4(req)),
     section('M5 — backfill on install', () => m5(req)),
+    section('M6 — config and untrusted hashes', () => m6(req)),
   ].join('\n');
 
   return {

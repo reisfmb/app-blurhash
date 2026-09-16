@@ -12,6 +12,12 @@
     "paths": {
       "/lib/xp/core": ["../../../node_modules/@enonic-types/core"],
       "/lib/xp/*": ["../../../node_modules/@enonic-types/lib-*"],
+      // lib-blurhash has no npm package; type against the sibling checkout (dev only — the
+      // deploy loop in README already assumes this layout).
+      "/lib/blurhash": ["../../../../lib-blurhash/src/main/resources/lib/blurhash/index.ts"],
+      "/lib/blurhash/*": ["../../../../lib-blurhash/src/main/resources/lib/blurhash/*"],
+      // Libs without an @enonic-types package get a hand-written module under types/.
+      "/lib/thymeleaf": ["./types/thymeleaf.d.ts"],
       "/lib/*": ["./lib/*"]
     }
   },

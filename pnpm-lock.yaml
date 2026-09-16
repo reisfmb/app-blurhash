@@ -1,3 +1,97 @@
+---
+lockfileVersion: '9.0'
+
+importers:
+
+  .:
+    configDependencies: {}
+    packageManagerDependencies:
+      '@pnpm/exe':
+        specifier: 10.33.4
+        version: 10.33.4
+      pnpm:
+        specifier: 10.33.4
+        version: 10.33.4
+
+packages:
+
+  '@pnpm/exe@10.33.4':
+    resolution: {integrity: sha512-/kXXlHAXWHt7INYwQIWg2eQ85GaUqgfj0ltUB7T9emhA1smOgamJ8cQEhNBzc32vmKaV1bI5IxFShe1rfXMTDw==}
+    hasBin: true
+
+  '@pnpm/linux-arm64@10.33.4':
+    resolution: {integrity: sha512-VGX2CIOL/1RwOfAsQM8i4XYJXer/LUM/T2gB8eIG/g8PIxpYqJ1Fv5xjCz7x2s2Kek4mujim+3mQ0aOGnqj99Q==}
+    cpu: [arm64]
+    os: [linux]
+    hasBin: true
+
+  '@pnpm/linux-x64@10.33.4':
+    resolution: {integrity: sha512-hTlGChXiJ9/NGm43d/Ai/7SQ6X7S1WQkq5+7TfNNyloB06BaKfSjlPhI9qJIEnlBKr/bkgoql1EC8zBvF2Ebxg==}
+    cpu: [x64]
+    os: [linux]
+    hasBin: true
+
+  '@pnpm/macos-arm64@10.33.4':
+    resolution: {integrity: sha512-8hfg2/6zHmptukEO8DwKCGp7OWCjDSelkBvtbcbbE1UBXwRTH5N6yCklIYK3SLfdlWfYEgHRt1SBq2AHkm90Xw==}
+    cpu: [arm64]
+    os: [darwin]
+    hasBin: true
+
+  '@pnpm/macos-x64@10.33.4':
+    resolution: {integrity: sha512-FuQJvHhcgJ0OMVqrbf35LUn3TAD1c8fekJL1i7gSY5ls0QtoYt49XtoDaD6beFcvrJ1GyubERlDsFe3957iXUQ==}
+    cpu: [x64]
+    os: [darwin]
+    hasBin: true
+
+  '@pnpm/win-arm64@10.33.4':
+    resolution: {integrity: sha512-13O9kR6A0AvhhGMGocxt7ujvyIzJkAir3fCVTvKFCJYHLjSANeNMrCutczxDdg3VkedZiftMWsLfCRQ64GXpQA==}
+    cpu: [arm64]
+    os: [win32]
+    hasBin: true
+
+  '@pnpm/win-x64@10.33.4':
+    resolution: {integrity: sha512-O0XumKXWdF+newAVzemkGyW/FBvGQ3t9bXG0iAYvxDxLAcTaNxUueKLNQjTCSlpgm+4s6HKw/kq6Z6i6Y+Bqeg==}
+    cpu: [x64]
+    os: [win32]
+    hasBin: true
+
+  pnpm@10.33.4:
+    resolution: {integrity: sha512-HGezs1my1AgRm6HtKJ80uPw8aHNBK+xv0mT73IJInlEPy+y5zp0i2ufzt2Jp2EQQRgFL3KU7mXnNelYa1jG4AA==}
+    engines: {node: '>=18.12'}
+    hasBin: true
+
+snapshots:
+
+  '@pnpm/exe@10.33.4':
+    optionalDependencies:
+      '@pnpm/linux-arm64': 10.33.4
+      '@pnpm/linux-x64': 10.33.4
+      '@pnpm/macos-arm64': 10.33.4
+      '@pnpm/macos-x64': 10.33.4
+      '@pnpm/win-arm64': 10.33.4
+      '@pnpm/win-x64': 10.33.4
+
+  '@pnpm/linux-arm64@10.33.4':
+    optional: true
+
+  '@pnpm/linux-x64@10.33.4':
+    optional: true
+
+  '@pnpm/macos-arm64@10.33.4':
+    optional: true
+
+  '@pnpm/macos-x64@10.33.4':
+    optional: true
+
+  '@pnpm/win-arm64@10.33.4':
+    optional: true
+
+  '@pnpm/win-x64@10.33.4':
+    optional: true
+
+  pnpm@10.33.4: {}
+
+---
 lockfileVersion: '9.0'
 
 settings:
@@ -23,10 +117,19 @@ importers:
       '@enonic-types/lib-context':
         specifier: ^8.0.4
         version: 8.0.4
+      '@enonic-types/lib-event':
+        specifier: ^8.0.4
+        version: 8.0.4
       '@enonic-types/lib-io':
         specifier: ^8.0.4
         version: 8.0.4
       '@enonic-types/lib-portal':
+        specifier: ^8.0.4
+        version: 8.0.4
+      '@enonic-types/lib-project':
+        specifier: ^8.0.4
+        version: 8.0.4
+      '@enonic-types/lib-task':
         specifier: ^8.0.4
         version: 8.0.4
       typescript:
@@ -68,11 +171,20 @@ packages:
   '@enonic-types/lib-context@8.0.4':
     resolution: {integrity: sha512-5E6x4Ow4O9lE1UCYXgwcHytC6GsRbtzdXp7rxSufQxrsJLKvF4+XyQqA2Hws4cGl8RbZhm2gboSB/NfC5TugCw==}
 
+  '@enonic-types/lib-event@8.0.4':
+    resolution: {integrity: sha512-RBmAE/n3EOvrnru/RTvvYFWk0hjahO5rJBD8LycQkBO/Zg8Q5fKFh7dKZpPb9LwbXWPJfJSa6uJZFPsONb606Q==}
+
   '@enonic-types/lib-io@8.0.4':
     resolution: {integrity: sha512-nrcExEXKGu1DiLfAhrm7/X2w+O4nXa08VJsA/CP2GPkdWUDHdpjDUPmfIYwzRxiRzT2DNUPf0/0B/eENbr7kgA==}
 
   '@enonic-types/lib-portal@8.0.4':
     resolution: {integrity: sha512-XetDnczRi2JnpDxj14hsjcTPgtTrMiZhOVij+RB4JXwnWmidgZv1WuDXVsOdJcPLh/41V9LGTqT8I1wbrkfoCQ==}
+
+  '@enonic-types/lib-project@8.0.4':
+    resolution: {integrity: sha512-8k8/7cJEJiyHz18TqYu9jvldHRVvXDmxtmBM7yhykXJdlzRO+kfKT1Dl/a4T10PjkG/SccDthWmTTSOK/ZlOQw==}
+
+  '@enonic-types/lib-task@8.0.4':
+    resolution: {integrity: sha512-FmoM0Jow4tRDcSRXi8GUAbDUY1RA7kIQEo0opzR9O2Nzfpd0xcX4d+vFbl8R11Lp+nMgMmqzdSs2bYVTzv1vbg==}
 
   '@jridgewell/sourcemap-codec@1.6.0':
     resolution: {integrity: sha512-T7jf+5zgsZHwNJ4lvQ7/aezbyk0nNX+zJVWpmHA7VYsEx7a7qr5Rg5IbtJFqkgze5Y2sruq1RUY8Q837Od7iFw==}
@@ -1142,11 +1254,21 @@ snapshots:
     dependencies:
       '@enonic-types/core': 8.0.4
 
+  '@enonic-types/lib-event@8.0.4': {}
+
   '@enonic-types/lib-io@8.0.4':
     dependencies:
       '@enonic-types/core': 8.0.4
 
   '@enonic-types/lib-portal@8.0.4':
+    dependencies:
+      '@enonic-types/core': 8.0.4
+
+  '@enonic-types/lib-project@8.0.4':
+    dependencies:
+      '@enonic-types/core': 8.0.4
+
+  '@enonic-types/lib-task@8.0.4':
     dependencies:
       '@enonic-types/core': 8.0.4
 
