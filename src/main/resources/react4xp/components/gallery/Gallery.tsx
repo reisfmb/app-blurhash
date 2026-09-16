@@ -1,4 +1,5 @@
 import type { ComponentProps, PartData } from '@enonic/react-components';
+import { useEffect, useRef, useState } from 'react';
 import type { GalleryItem } from './GalleryItem';
 
 /** CSS multi-column masonry: items flow top-to-bottom, column by column. */
@@ -8,8 +9,51 @@ const masonry: React.CSSProperties = {
 };
 
 /**
+ * Hidden until fully *decoded*, so neither the network's progressive paint nor the decoder's
+ * top-to-bottom paint of a cached image ever shows over the placeholder; the finished image
+ * appears in one step. `load` (and `complete`) fire before decoding is done, hence `decode()`.
+ * The effect covers images already complete before hydration, when React's onLoad never fires.
+ */
+function GalleryImage({ item }: { item: GalleryItem }) {
+  const ref = useRef<HTMLImageElement>(null);
+  const [loaded, setLoaded] = useState(false);
+
+  const reveal = () => {
+    const img = ref.current;
+    if (!img) return;
+    const show = () => setLoaded(true);
+    if (typeof img.decode === 'function') img.decode().then(show, show);
+    else show();
+  };
+
+  useEffect(() => {
+    const img = ref.current;
+    if (img && img.complete && img.naturalWidth > 0) reveal();
+  }, []);
+
+  return (
+    <img
+      ref={ref}
+      src={item.url}
+      alt={item.alt}
+      width={item.width}
+      height={item.height}
+      loading="lazy"
+      decoding="async"
+      onLoad={reveal}
+      style={{
+        display: 'block',
+        width: '100%',
+        height: 'auto',
+        opacity: loaded ? 1 : 0,
+      }}
+    />
+  );
+}
+
+/**
  * Four-column masonry of lazy-loaded images. When an item has a placeholder it sits behind the
- * <img> as a background, visible until the real bytes paint over it.
+ * <img> as a background, visible until the finished image is shown on top.
  */
 export function Gallery({ data }: ComponentProps<PartData>) {
   const items = (data?.items as GalleryItem[] | undefined) ?? [];
@@ -27,15 +71,7 @@ export function Gallery({ data }: ComponentProps<PartData>) {
               backgroundImage: item.placeholder ? `url(${item.placeholder})` : undefined,
             }}
           >
-            <img
-              src={item.url}
-              alt={item.alt}
-              width={item.width}
-              height={item.height}
-              loading="lazy"
-              decoding="async"
-              style={{ display: 'block', width: '100%', height: 'auto' }}
-            />
+            <GalleryImage item={item} />
           </div>
         </figure>
       ))}
