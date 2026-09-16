@@ -1,0 +1,4 @@
+kind: "Part"
+title: "Simple Gallery"
+description: "All images directly under the site, lazy-loaded with no placeholder"
+form: []

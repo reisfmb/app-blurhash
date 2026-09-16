@@ -1,11 +1,11 @@
 [versions]
 node-gradle = "7.1.0"
-thymeleaf = "3.0.0"
 blurhash = "1.0.0-SNAPSHOT"
+react4xp = "7.0.0"
 
 [libraries]
-thymeleaf = { module = "com.enonic.lib:lib-thymeleaf", version.ref = "thymeleaf" }
 blurhash = { module = "bre.lib:lib-blurhash", version.ref = "blurhash" }
+react4xp = { module = "com.enonic.lib:lib-react4xp", version.ref = "react4xp" }
 
 [plugins]
 node-gradle = { id = "com.github.node-gradle.node", version.ref = "node-gradle" }

@@ -2,8 +2,20 @@
 # `$name` keeps it on whatever package.json pins; the alias itself is bumped by hand.
 overrides:
   vite: '$vite'
+  # @enonic/react4xp's Rspack resolves only from top-level node_modules, so a nested duplicate
+  # breaks the globals bundle. htmlparser2 needs entities ^7; dom-serializer (^4) is API-compatible.
+  entities: '^7.0.1'
 peerDependencyRules:
   allowAny:
     - vite
   allowedVersions:
     vite: '*'
+
+# @enonic/react4xp's Rspack resolves react's transitive deps (scheduler, ...) from a flat
+# node_modules; pnpm's isolated layout hides them. Hoist like npm does.
+nodeLinker: hoisted
+
+# Native/postinstall deps that may run build scripts.
+onlyBuiltDependencies:
+  - "@swc/core"
+  - esbuild

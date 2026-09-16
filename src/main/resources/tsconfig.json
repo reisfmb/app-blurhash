@@ -12,15 +12,17 @@
     "paths": {
       "/lib/xp/core": ["../../../node_modules/@enonic-types/core"],
       "/lib/xp/*": ["../../../node_modules/@enonic-types/lib-*"],
+      "/lib/enonic/react4xp": ["../../../node_modules/@enonic-types/lib-react4xp"],
       // lib-blurhash has no npm package; type against the sibling checkout (dev only — the
       // deploy loop in README already assumes this layout).
       "/lib/blurhash": ["../../../../lib-blurhash/src/main/resources/lib/blurhash/index.ts"],
       "/lib/blurhash/*": ["../../../../lib-blurhash/src/main/resources/lib/blurhash/*"],
-      // Libs without an @enonic-types package get a hand-written module under types/.
-      "/lib/thymeleaf": ["./types/thymeleaf.d.ts"],
+      // App-local absolute requires (XP resolves them at runtime).
+      "/react4xp/*": ["./react4xp/*"],
+      "/types/*": ["./types/*"],
       "/lib/*": ["./lib/*"]
     }
   },
   "include": ["./**/*.ts"],
-  "exclude": ["assets/**"]
+  "exclude": ["assets/**", "**/*.tsx"]
 }

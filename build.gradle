@@ -21,7 +21,7 @@ dependencies {
     include xplibs.event
     include xplibs.task
     include xplibs.project
-    include libs.thymeleaf
+    include libs.react4xp
 
     // Embeds the lib jar in this bundle: its /lib/blurhash JS and its Java classes both
     // resolve under this app's key.
@@ -52,6 +52,7 @@ tasks.named('pnpmInstall', PnpmInstallTask) {
 // versions into build/resources/main instead.
 tasks.named('processResources') {
     exclude '**/*.ts' // server TS emitted as .js by pnpmPack
+    exclude '**/*.tsx' // React entries/components emitted by the react4xp task
     exclude '**/tsconfig.json' // type-check config, not an app resource
     exclude '**/.gitkeep'
     exclude '**/node_modules/**'
@@ -80,6 +81,28 @@ tasks.register('pnpmPack', PnpmTask) {
     }
 }
 
+// @enonic/react4xp's own tsup + Rspack pipeline: .tsx entries -> build/resources/main/r4xAssets,
+// plus the SSR executor. Config in react4xp.config.js / webpack.config.react4xp.js.
+tasks.register('react4xp', PnpmTask) {
+    dependsOn tasks.named('pnpmInstall')
+    mustRunAfter tasks.named('processResources'), tasks.named('pnpmPack')
+    description = 'Compile react4xp resources (.tsx) with @enonic/react4xp.'
+    group = 'build'
+    args = ['run', 'build:react4xp']
+    environment = [
+        // NB: `project.group` — a bare `group` inside a task block is the task group ("build").
+        'R4X_APP_NAME': "${project.group}.${projectName}".toString(),
+        'R4X_BUILD_LOG_LEVEL': gradle.startParameter.logLevel.toString(),
+        'R4X_DIR_PATH_ABSOLUTE_PROJECT': project.projectDir.toString(),
+        'NODE_ENV': project.hasProperty('dev') ? 'development' : 'production'
+    ]
+    inputs.dir 'src/main/resources/react4xp'
+    inputs.file 'react4xp.config.js'
+    inputs.file 'webpack.config.react4xp.js'
+    outputs.dir layout.buildDirectory.dir('resources/main')
+    outputs.cacheIf { false }
+}
+
 tasks.named('jar') {
-    dependsOn tasks.named('pnpmPack')
+    dependsOn tasks.named('pnpmPack'), tasks.named('react4xp')
 }

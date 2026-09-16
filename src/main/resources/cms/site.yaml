@@ -1,4 +1,15 @@
 kind: "Site"
 apis:
   - "asset"
-mappings: []
+  - "react4xp"
+# React4XP renders the whole content tree from one controller (cms/app.ts); the component
+# mapping serves single components to Content Studio's visual editor (cms/component.ts).
+mappings:
+  - controller: "/cms/app.js"
+    order: 10
+    # inverted match on a path nothing uses = "every request".
+    pattern: "/r4xp5.*"
+    invertPattern: true
+  - controller: "/cms/component.js"
+    service: "component"
+    order: 10

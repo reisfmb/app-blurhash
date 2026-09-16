@@ -12,7 +12,7 @@ export default defineConfig({
     platform: 'node',
     unbundle: true, // per-file output, not one bundle
     outExtensions: () => ({ js: '.js' }), // XP wants .js, not the cjs default .cjs
-    deps: { neverBundle: [/^\/lib\//] }, // absolute XP requires stay external
+    deps: { neverBundle: [/^\//] }, // absolute XP requires (/lib/*, /react4xp/*) stay external
     target: 'es2023',
     treeshake: false, // XP calls exports.get/all at runtime — don't drop as dead
     clean: false,

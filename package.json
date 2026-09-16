@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "description": "Demo site app for lib-blurhash on Enonic XP 8",
-  "type": "module",
   "scripts": {
-    "pack:server": "vp pack"
+    "pack:server": "vp pack",
+    "build:react4xp": "pnpm --dir node_modules/@enonic/react4xp run build:react4xp",
+    "check:types": "pnpm exec tsc --noEmit -p src/main/resources/tsconfig.json && pnpm exec tsc --noEmit -p src/main/resources/react4xp/tsconfig.json"
   },
   "devDependencies": {
     "@enonic-types/core": "^8.0.4",
@@ -16,7 +17,11 @@
     "@enonic-types/lib-io": "^8.0.4",
     "@enonic-types/lib-portal": "^8.0.4",
     "@enonic-types/lib-project": "^8.0.4",
+    "@enonic-types/lib-react4xp": "^7.0.0",
     "@enonic-types/lib-task": "^8.0.4",
+    "@enonic/react4xp": "^7.0.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "typescript": "^7.0.2",
     "vite": "npm:@voidzero-dev/vite-plus-core@0.2.9",
     "vite-plus": "0.2.9"
@@ -27,5 +32,11 @@
       "version": "10.33.4"
     }
   },
-  "packageManager": "pnpm@10.33.4"
+  "packageManager": "pnpm@10.33.4",
+  "dependencies": {
+    "@enonic/react-components": "^7.0.0",
+    "html-react-parser": "^5.2.17",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  }
 }

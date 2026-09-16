@@ -1,0 +1,21 @@
+{
+  // React (.tsx) type-check config. Emit is @enonic/react4xp's Rspack pipeline, not tsc.
+  "include": ["./**/*.tsx"],
+  "exclude": ["./**/*.d.ts"],
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ES2020",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "lib": ["DOM", "ES2020"],
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "paths": {
+      "/lib/xp/*": ["../../../../node_modules/@enonic-types/lib-*"],
+      "/*": ["../*"]
+    }
+  }
+}
