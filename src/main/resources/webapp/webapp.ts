@@ -8,6 +8,7 @@
 import { query, get as getContent, getAttachmentStream } from '/lib/xp/content';
 import { run } from '/lib/xp/context';
 import { decode, decodeRgb, encodeThumbnail, process, readThumbnail } from '/lib/blurhash';
+import { modify } from '/lib/xp/content';
 
 const DEFAULT_REPO = 'com.enonic.cms.blurhash-demo';
 
@@ -166,6 +167,48 @@ function m3(req: Request): string {
   });
 }
 
+/**
+ * M4: the listener refills a hash nobody asked it to.
+ *
+ * Two steps on purpose. `?clear=1` wipes the stored mixin, which itself fires node.updated —
+ * so by the time the page is reloaded the listener should already have put a hash back. A
+ * single request cannot show this: the event is asynchronous, and sleeping inside a
+ * controller to wait for it would prove less than reloading does.
+ */
+function m4(req: Request): string {
+  const repo = req.params.repo || DEFAULT_REPO;
+  const image = subject(repo, req.params.id);
+  const clearing = req.params.clear === '1';
+
+  return inAdmin(repo, () => {
+    if (clearing) {
+      modify<StoredMedia>({
+        key: image._id,
+        requireValid: false,
+        editor: (c) => {
+          if (c.x?.['bre-app-blurhash']) delete c.x['bre-app-blurhash'].blurhash;
+          return c;
+        },
+      });
+
+      return `HTML:<p>Cleared the mixin on <code>${image._path}</code>.` +
+        ` <a href="?">Reload</a> — the listener should have refilled it.</p>` +
+        `\n\ncleared at ${new Date().toISOString()}`;
+    }
+
+    const stored = (getContent({ key: image._id }) as StoredMedia | null)
+      ?.x?.['bre-app-blurhash']?.blurhash;
+
+    const state = stored && stored.hash
+      ? `present: ${stored.hash}\nsource:  ${stored.source}`
+      : 'ABSENT — if this persists after a reload, the listener is not running';
+
+    return `HTML:<p><a href="?clear=1">Clear the hash</a>, then reload: ` +
+      `the listener should restore it unaided.</p>` +
+      `\n\nstored hash is ${state}`;
+  });
+}
+
 function section(title: string, run_: () => string): string {
   let ok = true;
   let body: string;
@@ -193,6 +236,7 @@ function handleGet(req: Request): { contentType: string; body: string } {
   const sections = [
     section('M2 — encode and decode', () => m2(req)),
     section('M3 — store in the mixin, render from storage', () => m3(req)),
+    section('M4 — event listener refills it', () => m4(req)),
   ].join('\n');
 
   return {
