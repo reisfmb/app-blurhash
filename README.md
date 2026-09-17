@@ -29,6 +29,7 @@ progressive paint nor a cached image's top-to-bottom paint ever shows over the p
 | `src/main/resources/cms/pages/default/` | Page controller; renders the `App` entry via react4xp |
 | `src/main/resources/cms/parts/*/` | Part descriptors (no controllers; processors live under `react4xp/`) |
 | `src/main/resources/react4xp/` | Entry, component registry, data fetcher, gallery/hero components and processors |
+| `src/main/resources/guillotine/guillotine.ts` | Re-exports the library's Guillotine extensions: `media_Image.blurhash` |
 
 The `blurhash` mixin *definition* ships inside lib-blurhash; only its registration lives
 here, because `cms/cms.yaml` is a single app-level file a library cannot contribute.
