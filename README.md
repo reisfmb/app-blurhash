@@ -29,7 +29,6 @@ progressive paint nor a cached image's top-to-bottom paint ever shows over the p
 | `src/main/resources/cms/pages/default/` | Page controller; renders the `App` entry via react4xp |
 | `src/main/resources/cms/parts/*/` | Part descriptors (no controllers; processors live under `react4xp/`) |
 | `src/main/resources/react4xp/` | Entry, component registry, data fetcher, gallery/hero components and processors |
-| `src/main/resources/webapp/webapp.ts` | Dev harness, one section per milestone |
 
 The `blurhash` mixin *definition* ships inside lib-blurhash; only its registration lives
 here, because `cms/cms.yaml` is a single app-level file a library cannot contribute.
@@ -65,8 +64,5 @@ pnpm run check:types   # server .ts and react4xp .tsx
    `main` region. The gallery defaults to the folder the page sits on.
 3. Throttle the network in devtools and reload: placeholders appear immediately, images fade
    in as they decode.
-
-Harness: `http://localhost:8080/webapp/bre.app.blurhash/` (`?id=<contentId>`, `?repo=<repo>`,
-`?wipe=1` in M5 to strip hashes and watch the backfill refill them).
 
 Admin: http://localhost:8080/admin
