@@ -1,15 +1,9 @@
 import type { ComponentProps, PartData } from '@enonic/react-components';
 import type { ImageItem } from '../shared/imageTypes';
-import { RevealImage } from '../shared/RevealImage';
 
 type HeroData = { title: string; text: string; image: ImageItem | null };
 
-type HeroProps = ComponentProps<PartData> & {
-  /** Blurhash variant: hide the image until decoded, then fade it in over the placeholder. */
-  reveal?: boolean;
-};
-
-const plainImage: React.CSSProperties = { display: 'block', width: '100%', height: 'auto' };
+const imageStyle: React.CSSProperties = { display: 'block', width: '100%', height: 'auto' };
 
 /** Black or white, whichever reads better on `#rrggbb` (WCAG relative luminance). */
 function textColorOn(background: string): string {
@@ -24,10 +18,11 @@ function textColorOn(background: string): string {
 
 /**
  * Title and text on the left (60%), image on the right (40%). The section's background is the
- * image's dominant colour when the hash is available, else black; the placeholder sits behind
- * the image until it has decoded.
+ * image's dominant colour when the hash is available, else black. The placeholder sits behind
+ * the <img>; the browser paints the real image over it natively as bytes arrive. Both parts use
+ * this view: the blurhash one supplies `placeholder` and `color`, the simple one neither.
  */
-export function Hero({ data, reveal = true }: HeroProps) {
+export function Hero({ data }: ComponentProps<PartData>) {
   const { title, text, image } = (data ?? {}) as Partial<HeroData>;
   const background = image?.color ?? '#000';
   const color = textColorOn(background);
@@ -47,11 +42,7 @@ export function Hero({ data, reveal = true }: HeroProps) {
               backgroundImage: image.placeholder ? `url(${image.placeholder})` : undefined,
             }}
           >
-            {reveal ? (
-              <RevealImage src={image.url} alt={image.alt} width={image.width} height={image.height} />
-            ) : (
-              <img src={image.url} alt={image.alt} width={image.width} height={image.height} loading="lazy" style={plainImage} />
-            )}
+            <img src={image.url} alt={image.alt} width={image.width} height={image.height} loading="lazy" style={imageStyle} />
           </div>
         ) : (
           <p style={{ margin: 0, opacity: 0.6 }}>No image selected.</p>
@@ -61,7 +52,3 @@ export function Hero({ data, reveal = true }: HeroProps) {
   );
 }
 
-/** The simple variant: a plain lazy <img> on black, no placeholder, no reveal. */
-export function SimpleHero(props: ComponentProps<PartData>) {
-  return <Hero {...props} reveal={false} />;
-}

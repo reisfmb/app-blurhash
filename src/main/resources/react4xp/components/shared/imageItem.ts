@@ -27,7 +27,7 @@ export function toImageItem(image: ImageContent, withHash: boolean): ImageItem {
   const hash = withHash ? stored?.hash : undefined;
 
   return {
-    url: imageUrl({ id: image._id, scale: 'full' }), // longest side capped, ratio kept
+    url: imageUrl({ id: image._id, scale: 'max(2000)' }), // longest side capped, ratio kept
     alt: image.displayName,
     width,
     height,
