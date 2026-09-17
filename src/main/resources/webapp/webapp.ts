@@ -218,7 +218,7 @@ function m4(req: Request): string {
 }
 
 /**
- * M5: the backfill runs from install(), so the only honest test is to give it work and
+ * M5: the backfill runs from init(), so the only honest test is to give it work and
  * restart the app.
  *
  * `?wipe=1` strips the mixin from every image in the repo. Redeploy, reload, and the count
@@ -243,7 +243,7 @@ function m5(req: Request): string {
       });
 
       return `HTML:<p>Wiped the hash from ${images.total} image(s). ` +
-        `Redeploy the app, then <a href="?">reload</a> — install() should refill them.</p>` +
+        `Redeploy the app, then <a href="?">reload</a> — init() should refill them.</p>` +
         `\n\nwiped at ${new Date().toISOString()}`;
     }
 
@@ -390,7 +390,7 @@ function handleGet(req: Request): { contentType: string; body: string } {
     section('M2 — encode and decode', () => m2(req)),
     section('M3 — store in the mixin, render from storage', () => m3(req)),
     section('M4 — event listener refills it', () => m4(req)),
-    section('M5 — backfill on install', () => m5(req)),
+    section('M5 — backfill on init', () => m5(req)),
     section('M6 — config and untrusted hashes', () => m6(req)),
   ].join('\n');
 
